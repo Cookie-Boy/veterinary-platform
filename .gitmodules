@@ -1,0 +1,3 @@
+[submodule "services/appointment-service"]
+	path = services/appointment-service
+	url = https://github.com/Cookie-Boy/appointment-service.git

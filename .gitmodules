@@ -4,3 +4,9 @@
 [submodule "services/telegram-bot-service"]
 	path = services/telegram-bot-service
 	url = https://github.com/Cookie-Boy/telegram-bot-service.git
+[submodule "services/vet-gateway"]
+	path = services/vet-gateway
+	url = https://github.com/Cookie-Boy/vet-gateway.git
+[submodule "services/management-service"]
+	path = services/management-service
+	url = https://github.com/Cookie-Boy/management-service.git

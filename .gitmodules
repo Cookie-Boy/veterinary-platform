@@ -10,3 +10,6 @@
 [submodule "services/management-service"]
 	path = services/management-service
 	url = https://github.com/Cookie-Boy/management-service.git
+[submodule "services/profile-service"]
+	path = services/profile-service
+	url = https://github.com/Cookie-Boy/profile-service.git

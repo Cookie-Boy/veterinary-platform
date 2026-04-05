@@ -1,15 +1,21 @@
 [submodule "services/appointment-service"]
 	path = services/appointment-service
 	url = https://github.com/Cookie-Boy/appointment-service.git
+[submodule "services/management-service"]
+	path = services/management-service
+	url = https://github.com/Cookie-Boy/management-service.git
+[submodule "services/pet-health-analyzer-service"]
+	path = services/pet-health-analyzer-service
+	url = https://github.com/Cookie-Boy/pet-health-analyzer-service.git
+[submodule "services/petwearable-service"]
+	path = services/petwearable-service
+	url = https://github.com/Cookie-Boy/petwearable-service.git
+[submodule "services/profile-service"]
+	path = services/profile-service
+	url = https://github.com/Cookie-Boy/profile-service.git
 [submodule "services/telegram-bot-service"]
 	path = services/telegram-bot-service
 	url = https://github.com/Cookie-Boy/telegram-bot-service.git
 [submodule "services/vet-gateway"]
 	path = services/vet-gateway
 	url = https://github.com/Cookie-Boy/vet-gateway.git
-[submodule "services/management-service"]
-	path = services/management-service
-	url = https://github.com/Cookie-Boy/management-service.git
-[submodule "services/profile-service"]
-	path = services/profile-service
-	url = https://github.com/Cookie-Boy/profile-service.git

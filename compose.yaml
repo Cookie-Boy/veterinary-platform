@@ -1,0 +1,320 @@
+networks:
+  vet-network:
+    driver: bridge
+
+x-java-env: &java-env
+  SPRING_PROFILES_ACTIVE: docker
+
+  DB_HOST: postgres
+  DB_PORT: 5432
+  DB_USERNAME: postgres
+  DB_PASSWORD: 12345
+
+  MONGO_HOST: mongo
+  MONGO_PORT: 27017
+
+  REDIS_HOST: redis
+  REDIS_PORT: 6379
+
+  KEYCLOAK_ISSUER_URI: http://keycloak:8080/realms/clinic-realm
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: vet-clinic
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 12345
+    ports:
+      - "5010:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - vet-network
+
+  mongo:
+    image: mongo:7.0
+    ports:
+      - "5020:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - vet-network
+
+  redis:
+    image: redis:7.2-alpine
+    ports:
+      - "5030:6379"
+    networks:
+      - vet-network
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - "5040:9000"
+      - "5041:9001"
+    volumes:
+      - minio-data:/data
+    networks:
+      - vet-network
+
+  mqtt:
+    image: eclipse-mosquitto:2.0
+    ports:
+      - "1883:1883"
+    networks:
+      - vet-network
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.6.0
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/vet-clinic
+      KC_DB_USERNAME: postgres
+      KC_DB_PASSWORD: 12345
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    command: start-dev
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    networks:
+      - vet-network
+
+  python-ai:
+    build: ./services/ai-model
+    ports:
+      - "8091:8091"
+    environment:
+      MODEL_PATH: /app/pet_health_model.pkl
+      REDIS_HOST: redis
+    volumes:
+      - ./services/ai-model:/app
+    networks:
+      - vet-network
+
+  appointment:
+    build: ./services/appointment-service
+    ports:
+      - "8081:8081"
+    environment:
+      <<: *java-env
+      KEYCLOAK_CLIENT_SECRET: KndP9iogTlX3TrdkzuPWgZYzztsp9o8D
+      TG_BOT_HOST: telegram-bot
+      TG_BOT_PORT: 8090
+    depends_on:
+      postgres:
+        condition: service_started
+      redis:
+        condition: service_started
+      keycloak:
+        condition: service_started
+    networks:
+      - vet-network
+    develop:
+      watch:
+        - action: rebuild
+          path: ./services/appointment-service
+          target: /app
+          ignore:
+            - build/
+            - .gradle/
+
+  management:
+    build: ./services/management-service
+    ports:
+      - "8082:8082"
+    environment:
+      <<: *java-env
+      KEYCLOAK_CLIENT_SECRET: your-management-secret
+    depends_on:
+      - postgres
+      - redis
+      - keycloak
+    networks:
+      - vet-network
+    develop:
+      watch:
+        - action: rebuild
+          path: ./services/management-service
+          target: /app
+          ignore:
+            - build/
+            - .gradle/
+
+  profile:
+    build: ./services/profile-service
+    ports:
+      - "8083:8083"
+    environment:
+      <<: *java-env
+      KEYCLOAK_CLIENT_SECRET: your-profile-secret
+    depends_on:
+      - postgres
+      - redis
+      - keycloak
+    networks:
+      - vet-network
+    develop:
+      watch:
+        - action: rebuild
+          path: ./services/profile-service
+          target: /app
+          ignore:
+            - build/
+            - .gradle/
+
+  pet-health-analyzer:
+    build: ./services/pet-health-analyzer-service
+    ports:
+      - "8084:8084"
+    environment:
+      <<: *java-env
+      KEYCLOAK_CLIENT_SECRET: KndP9iogTlX3TrdkzuPWgZYzztsp9o8D
+      MQTT_HOST: mqtt
+      MQTT_PORT: 1883
+
+      GATEWAY_HOST: vet-gateway
+      GATEWAY_PORT: 8888
+
+      PYTHON_HOST: python-ai
+      PYTHON_PORT: 8091
+
+      MINIO_HOST: minio
+      MINIO_PORT: 9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+    depends_on:
+      postgres:
+        condition: service_started
+      mongo:
+        condition: service_started
+      redis:
+        condition: service_started
+      keycloak:
+        condition: service_started
+      mqtt:
+        condition: service_started
+      python-ai:
+        condition: service_started
+    networks:
+      - vet-network
+    develop:
+      watch:
+        - action: rebuild
+          path: ./services/pet-health-analyzer-service
+          target: /app
+          ignore:
+            - build/
+            - .gradle/
+
+  pet-wearable:
+    build: ./services/petwearable-service
+    ports:
+      - "8085:8085"
+    environment:
+      <<: *java-env
+      KEYCLOAK_CLIENT_SECRET: your-petwearable-secret
+
+      MQTT_HOST: mqtt
+      MQTT_PORT: 1883
+      
+      GATEWAY_HOST: vet-gateway
+      GATEWAY_PORT: 8888
+    depends_on:
+      - postgres
+      - redis
+      - keycloak
+    networks:
+      - vet-network
+    develop:
+      watch:
+        - action: rebuild
+          path: ./services/petwearable-service
+          target: /app
+          ignore:
+            - build/
+            - .gradle/
+
+  telegram-bot:
+    build: ./services/telegram-bot-service
+    ports:
+      - "8090:8090"
+    environment:
+      <<: *java-env
+      KEYCLOAK_CLIENT_SECRET: MnRm2WcQMWruSA09qH2jpL9dwwF45ijx
+
+      BOT_TOKEN: ${BOT_TOKEN:-7837490236:AAFYka05fv1LDRseAdcJ3E_n_GxiGI3pOtA}
+      BOT_WEBHOOK_URL: ${BOT_WEBHOOK_URL:-https://jpr3ta-109-174-76-92.ru.tuna.am}
+
+      JETTY_HOST: localhost
+      JETTY_PORT: 9091
+
+      MQTT_HOST: mqtt
+      MQTT_PORT: 1883
+
+      GATEWAY_HOST: vet-gateway
+      GATEWAY_PORT: 8888
+    depends_on:
+      postgres:
+        condition: service_started
+      keycloak:
+        condition: service_started
+      mqtt:
+        condition: service_started
+    networks:
+      - vet-network
+    develop:
+      watch:
+        - action: rebuild
+          path: ./services/telegram-bot-service
+          target: /app
+          ignore:
+            - build/
+            - .gradle/
+
+  vet-gateway:
+    build: ./services/vet-gateway
+    ports:
+      - "8888:8888"
+    environment:
+      <<: *java-env
+
+      KEYCLOAK_HOST: keycloak
+      KEYCLOAK_PORT: 8080
+
+      APPOINTMENT_HOST: appointment
+      APPOINTMENT_PORT: 8081
+
+      MANAGEMENT_HOST: management
+      MANAGEMENT_PORT: 8082
+
+      TELEGRAM_HOST: telegram-bot
+      TELEGRAM_PORT: 8090
+
+      KEYCLOAK_CLIENT_SECRET: oy3FdqCED7Wi4BPX7JZ0Y3ils24UopsR
+    depends_on:
+      - appointment
+      - management
+      - telegram-bot
+      - keycloak
+    networks:
+      - vet-network
+    develop:
+      watch:
+        - action: rebuild
+          path: ./services/vet-gateway
+          target: /app
+          ignore:
+            - build/
+            - .gradle/
+
+volumes:
+  postgres-data:
+  mongo-data:
+  minio-data:

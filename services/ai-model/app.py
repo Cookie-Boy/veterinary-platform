@@ -16,6 +16,7 @@ MINIO_BUCKET = os.getenv('MINIO_BUCKET', 'ml-models')
 MINIO_MODEL_OBJECT = os.getenv('MINIO_MODEL_OBJECT', 'pet_health_model.pkl')
 
 MODEL_PATH = "pet_health_model.pkl"
+HTTP_PORT = 8091
 
 # Download model from MinIO on startup
 def load_model_from_minio():
@@ -74,4 +75,4 @@ def predict():
     return jsonify(response_data)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=HTTP_PORT, debug=True, use_reloader=False)

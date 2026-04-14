@@ -1,1 +1,23 @@
-.vscode
+# Frontend
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/build/
+frontend/dist/
+
+# Backend (микросервисы)
+**/build/
+**/target/
+**/.gradle/
+**/logs/
+
+# Docker
+*.log
+.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~

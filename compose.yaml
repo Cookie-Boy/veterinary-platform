@@ -155,8 +155,7 @@ services:
       <<: *java-env
       KEYCLOAK_CLIENT_SECRET: your-profile-secret
     depends_on:
-      - postgres
-      - redis
+      - mongo
       - keycloak
     networks:
       - vet-network
@@ -294,14 +293,18 @@ services:
       MANAGEMENT_HOST: management
       MANAGEMENT_PORT: 8082
 
+      PROFILE_HOST: profile
+      PROFILE_PORT: 8083
+
       TELEGRAM_HOST: telegram-bot
       TELEGRAM_PORT: 8090
 
       KEYCLOAK_CLIENT_SECRET: oy3FdqCED7Wi4BPX7JZ0Y3ils24UopsR
     depends_on:
-      - appointment
-      - management
-      - telegram-bot
+      # - appointment
+      # - management
+      - profile
+      # - telegram-bot
       - keycloak
     networks:
       - vet-network
@@ -313,6 +316,31 @@ services:
           ignore:
             - build/
             - .gradle/
+    
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    environment:
+      NEXTAUTH_URL: http://localhost:3000
+      NEXTAUTH_SECRET: HLZUx8ifGW+9pT1Xh0v7tln8706sYj+++i2DSXxbruY=
+      
+      KEYCLOAK_ISSUER: http://keycloak:8080/realms/clinic-realm
+      KEYCLOAK_CLIENT_ID: vet-frontend
+      KEYCLOAK_CLIENT_SECRET: Gv1nqQU8imIrxFxQrI9N7Dk0RZqiZ5lQ
+      
+      KEYCLOAK_ADMIN_CLIENT_ID: profile-service
+      KEYCLOAK_ADMIN_CLIENT_SECRET: Xl2WP6TD01qkB5Lmd5abECck6VxlGBtk
+      KEYCLOAK_REALM: clinic-realm
+      KEYCLOAK_BASE_URL: http://keycloak:8080
+      
+      NEXT_PUBLIC_API_URL: http://vet-gateway:8888
+      API_URL_EXTERNAL: http://localhost:8888
+    depends_on:
+      - vet-gateway
+      - keycloak
+    networks:
+      - vet-network
 
 volumes:
   postgres-data:

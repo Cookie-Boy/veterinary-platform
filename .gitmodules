@@ -19,3 +19,6 @@
 [submodule "services/vet-gateway"]
 	path = services/vet-gateway
 	url = https://github.com/Cookie-Boy/vet-gateway.git
+[submodule "frontend"]
+	path = frontend
+	url = https://github.com/Cookie-Boy/vet-frontend.git

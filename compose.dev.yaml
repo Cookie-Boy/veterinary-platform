@@ -5,10 +5,9 @@ networks:
 # Общие переменные окружения для Java-сервисов
 x-java-env: &java-env
   SPRING_PROFILES_ACTIVE: docker
-  # Все подключения будут идти либо на локальное имя сервиса, либо на удалённый ПК
   DB_HOST: ${REMOTE_HOST:-postgres}
-  DB_PORT: ${REMOTE_HOST:+5432}  # если REMOTE_HOST задан, порт стандартный; иначе будет подставлен из сервиса
-  SPRING_DATASOURCE_URL: jdbc:postgresql://${REMOTE_HOST:-postgres}:5432/vet-clinic
+  DB_PORT: ${REMOTE_HOST:+5432}
+  SPRING_DATASOURCE_URL: jdbc:postgresql://${REMOTE_HOST:-postgres}:5432/vet-clinic?uuidRepresentation=standard
   SPRING_DATASOURCE_USERNAME: postgres
   SPRING_DATASOURCE_PASSWORD: 12345
   MONGO_HOST: ${REMOTE_HOST:-mongo}
@@ -18,7 +17,6 @@ x-java-env: &java-env
   KEYCLOAK_ISSUER_URI: http://${REMOTE_HOST:-keycloak}:8080/realms/clinic-realm
 
 services:
-  # ---------- ИНФРАСТРУКТУРНЫЕ СЕРВИСЫ (запускаются на ПК) ----------
   postgres:
     image: postgres:16-alpine
     environment:
@@ -180,7 +178,7 @@ services:
       - python-ai
     networks:
       - vet-network
-    # profiles: ["infra"]
+    profiles: ["infra"]
 
   pet-wearable:
     build: ./services/petwearable-service
@@ -199,7 +197,7 @@ services:
       - keycloak
     networks:
       - vet-network
-    # profiles: ["infra"]
+    profiles: ["infra"]
 
   telegram-bot:
     build: ./services/telegram-bot-service
@@ -222,7 +220,7 @@ services:
       - mqtt
     networks:
       - vet-network
-    # profiles: ["infra"]
+    profiles: ["infra"]
 
   vet-gateway:
     build: ./services/vet-gateway
@@ -243,7 +241,7 @@ services:
 
       PROFILE_HOST: ${REMOTE_HOST:-profile}
       PROFILE_PORT: 8083
-
+      
       TELEGRAM_HOST: ${REMOTE_HOST:-telegram-bot}
       TELEGRAM_PORT: 8090
     depends_on:

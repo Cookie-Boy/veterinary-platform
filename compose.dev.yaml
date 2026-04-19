@@ -2,24 +2,23 @@ networks:
   vet-network:
     driver: bridge
 
+# Общие переменные окружения для Java-сервисов
 x-java-env: &java-env
   SPRING_PROFILES_ACTIVE: docker
-
-  DB_HOST: postgres
-  DB_PORT: 5432
-  SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/vet-clinic
+  # Все подключения будут идти либо на локальное имя сервиса, либо на удалённый ПК
+  DB_HOST: ${REMOTE_HOST:-postgres}
+  DB_PORT: ${REMOTE_HOST:+5432}  # если REMOTE_HOST задан, порт стандартный; иначе будет подставлен из сервиса
+  SPRING_DATASOURCE_URL: jdbc:postgresql://${REMOTE_HOST:-postgres}:5432/vet-clinic
   SPRING_DATASOURCE_USERNAME: postgres
   SPRING_DATASOURCE_PASSWORD: 12345
-
-  MONGO_HOST: mongo
+  MONGO_HOST: ${REMOTE_HOST:-mongo}
   MONGO_PORT: 27017
-
-  REDIS_HOST: redis
+  REDIS_HOST: ${REMOTE_HOST:-redis}
   REDIS_PORT: 6379
-
-  KEYCLOAK_ISSUER_URI: http://keycloak:8080/realms/clinic-realm
+  KEYCLOAK_ISSUER_URI: http://${REMOTE_HOST:-keycloak}:8080/realms/clinic-realm
 
 services:
+  # ---------- ИНФРАСТРУКТУРНЫЕ СЕРВИСЫ (запускаются на ПК) ----------
   postgres:
     image: postgres:16-alpine
     environment:
@@ -27,11 +26,12 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 12345
     ports:
-      - "5010:5432"
+      - "5010:5432"      # открываем порт для доступа с ноутбука
     volumes:
       - postgres-data:/var/lib/postgresql/data
     networks:
       - vet-network
+    profiles: ["infra"]   # запускается только на ПК
 
   mongo:
     image: mongo:7.0
@@ -41,6 +41,7 @@ services:
       - mongo-data:/data/db
     networks:
       - vet-network
+    profiles: ["infra"]
 
   redis:
     image: redis:7.2-alpine
@@ -48,6 +49,7 @@ services:
       - "5030:6379"
     networks:
       - vet-network
+    profiles: ["infra"]
 
   minio:
     image: minio/minio:latest
@@ -62,6 +64,7 @@ services:
       - minio-data:/data
     networks:
       - vet-network
+    profiles: ["infra"]
 
   mqtt:
     image: eclipse-mosquitto:2.0
@@ -69,6 +72,7 @@ services:
       - "1883:1883"
     networks:
       - vet-network
+    profiles: ["infra"]
 
   keycloak:
     image: quay.io/keycloak/keycloak:26.6.0
@@ -86,6 +90,7 @@ services:
       - postgres
     networks:
       - vet-network
+    profiles: ["infra"]
 
   python-ai:
     build: ./services/ai-model
@@ -93,12 +98,14 @@ services:
       - "8091:8091"
     environment:
       MODEL_PATH: /app/pet_health_model.pkl
-      REDIS_HOST: redis
+      REDIS_HOST: ${REMOTE_HOST:-redis}
     volumes:
       - ./services/ai-model:/app
     networks:
       - vet-network
+    profiles: ["infra"]
 
+  # ---------- МИКРОСЕРВИСЫ (по умолчанию на ПК, но могут быть запущены и локально) ----------
   appointment:
     build: ./services/appointment-service
     ports:
@@ -106,25 +113,15 @@ services:
     environment:
       <<: *java-env
       KEYCLOAK_CLIENT_SECRET: KndP9iogTlX3TrdkzuPWgZYzztsp9o8D
-      TG_BOT_HOST: telegram-bot
+      TG_BOT_HOST: ${REMOTE_HOST:-telegram-bot}
       TG_BOT_PORT: 8090
     depends_on:
-      postgres:
-        condition: service_started
-      redis:
-        condition: service_started
-      keycloak:
-        condition: service_started
+      - postgres
+      - redis
+      - keycloak
     networks:
       - vet-network
-    develop:
-      watch:
-        - action: rebuild
-          path: ./services/appointment-service
-          target: /app
-          ignore:
-            - build/
-            - .gradle/
+    profiles: ["infra", "dev"]   # можно запустить и там, и там (но обычно на ПК)
 
   management:
     build: ./services/management-service
@@ -139,14 +136,7 @@ services:
       - keycloak
     networks:
       - vet-network
-    develop:
-      watch:
-        - action: rebuild
-          path: ./services/management-service
-          target: /app
-          ignore:
-            - build/
-            - .gradle/
+    profiles: ["infra", "dev"]
 
   profile:
     build: ./services/profile-service
@@ -160,14 +150,7 @@ services:
       - keycloak
     networks:
       - vet-network
-    develop:
-      watch:
-        - action: rebuild
-          path: ./services/profile-service
-          target: /app
-          ignore:
-            - build/
-            - .gradle/
+    profiles: ["infra", "dev"]
 
   pet-health-analyzer:
     build: ./services/pet-health-analyzer-service
@@ -176,42 +159,26 @@ services:
     environment:
       <<: *java-env
       KEYCLOAK_CLIENT_SECRET: KndP9iogTlX3TrdkzuPWgZYzztsp9o8D
-      MQTT_HOST: mqtt
+      MQTT_HOST: ${REMOTE_HOST:-mqtt}
       MQTT_PORT: 1883
-
-      GATEWAY_HOST: vet-gateway
+      GATEWAY_HOST: ${REMOTE_HOST:-vet-gateway}
       GATEWAY_PORT: 8888
-
-      PYTHON_HOST: python-ai
+      PYTHON_HOST: ${REMOTE_HOST:-python-ai}
       PYTHON_PORT: 8091
-
-      MINIO_HOST: minio
+      MINIO_HOST: ${REMOTE_HOST:-minio}
       MINIO_PORT: 9000
       MINIO_ACCESS_KEY: minioadmin
       MINIO_SECRET_KEY: minioadmin
     depends_on:
-      postgres:
-        condition: service_started
-      mongo:
-        condition: service_started
-      redis:
-        condition: service_started
-      keycloak:
-        condition: service_started
-      mqtt:
-        condition: service_started
-      python-ai:
-        condition: service_started
+      - postgres
+      - mongo
+      - redis
+      - keycloak
+      - mqtt
+      - python-ai
     networks:
       - vet-network
-    develop:
-      watch:
-        - action: rebuild
-          path: ./services/pet-health-analyzer-service
-          target: /app
-          ignore:
-            - build/
-            - .gradle/
+    profiles: ["infra", "dev"]
 
   pet-wearable:
     build: ./services/petwearable-service
@@ -220,11 +187,9 @@ services:
     environment:
       <<: *java-env
       KEYCLOAK_CLIENT_SECRET: your-petwearable-secret
-
-      MQTT_HOST: mqtt
+      MQTT_HOST: ${REMOTE_HOST:-mqtt}
       MQTT_PORT: 1883
-      
-      GATEWAY_HOST: vet-gateway
+      GATEWAY_HOST: ${REMOTE_HOST:-vet-gateway}
       GATEWAY_PORT: 8888
     depends_on:
       - postgres
@@ -232,14 +197,7 @@ services:
       - keycloak
     networks:
       - vet-network
-    develop:
-      watch:
-        - action: rebuild
-          path: ./services/petwearable-service
-          target: /app
-          ignore:
-            - build/
-            - .gradle/
+    profiles: ["infra", "dev"]
 
   telegram-bot:
     build: ./services/telegram-bot-service
@@ -248,35 +206,21 @@ services:
     environment:
       <<: *java-env
       KEYCLOAK_CLIENT_SECRET: MnRm2WcQMWruSA09qH2jpL9dwwF45ijx
-
       BOT_TOKEN: ${BOT_TOKEN:-7837490236:AAFYka05fv1LDRseAdcJ3E_n_GxiGI3pOtA}
       BOT_WEBHOOK_URL: ${BOT_WEBHOOK_URL:-https://jpr3ta-109-174-76-92.ru.tuna.am}
-
       JETTY_HOST: localhost
       JETTY_PORT: 9091
-
-      MQTT_HOST: mqtt
+      MQTT_HOST: ${REMOTE_HOST:-mqtt}
       MQTT_PORT: 1883
-
-      GATEWAY_HOST: vet-gateway
+      GATEWAY_HOST: ${REMOTE_HOST:-vet-gateway}
       GATEWAY_PORT: 8888
     depends_on:
-      postgres:
-        condition: service_started
-      keycloak:
-        condition: service_started
-      mqtt:
-        condition: service_started
+      - postgres
+      - keycloak
+      - mqtt
     networks:
       - vet-network
-    develop:
-      watch:
-        - action: rebuild
-          path: ./services/telegram-bot-service
-          target: /app
-          ignore:
-            - build/
-            - .gradle/
+    profiles: ["infra", "dev"]
 
   vet-gateway:
     build: ./services/vet-gateway
@@ -284,40 +228,26 @@ services:
       - "8888:8888"
     environment:
       <<: *java-env
-
-      KEYCLOAK_HOST: keycloak
+      KEYCLOAK_HOST: ${REMOTE_HOST:-keycloak}
       KEYCLOAK_PORT: 8080
-
-      APPOINTMENT_HOST: appointment
+      APPOINTMENT_HOST: ${REMOTE_HOST:-appointment}
       APPOINTMENT_PORT: 8081
-
-      MANAGEMENT_HOST: management
+      MANAGEMENT_HOST: ${REMOTE_HOST:-management}
       MANAGEMENT_PORT: 8082
-
-      PROFILE_HOST: profile
+      PROFILE_HOST: ${REMOTE_HOST:-profile}
       PROFILE_PORT: 8083
-
-      TELEGRAM_HOST: telegram-bot
+      TELEGRAM_HOST: ${REMOTE_HOST:-telegram-bot}
       TELEGRAM_PORT: 8090
-
       KEYCLOAK_CLIENT_SECRET: oy3FdqCED7Wi4BPX7JZ0Y3ils24UopsR
     depends_on:
-      # - appointment
       - management
       - profile
-      # - telegram-bot
       - keycloak
     networks:
       - vet-network
-    develop:
-      watch:
-        - action: rebuild
-          path: ./services/vet-gateway
-          target: /app
-          ignore:
-            - build/
-            - .gradle/
-    
+    profiles: ["infra", "dev"]
+
+  # ---------- ФРОНТЕНД (чаще всего запускается локально) ----------
   frontend:
     build: ./frontend
     ports:
@@ -325,23 +255,21 @@ services:
     environment:
       NEXTAUTH_URL: http://localhost:3000
       NEXTAUTH_SECRET: HLZUx8ifGW+9pT1Xh0v7tln8706sYj+++i2DSXxbruY=
-      
-      KEYCLOAK_ISSUER: http://keycloak:8080/realms/clinic-realm
+      KEYCLOAK_ISSUER: http://${REMOTE_HOST:-keycloak}:8080/realms/clinic-realm
       KEYCLOAK_CLIENT_ID: vet-frontend
       KEYCLOAK_CLIENT_SECRET: Gv1nqQU8imIrxFxQrI9N7Dk0RZqiZ5lQ
-      
       KEYCLOAK_ADMIN_CLIENT_ID: profile-service
       KEYCLOAK_ADMIN_CLIENT_SECRET: Xl2WP6TD01qkB5Lmd5abECck6VxlGBtk
       KEYCLOAK_REALM: clinic-realm
-      KEYCLOAK_BASE_URL: http://keycloak:8080
-      
-      NEXT_PUBLIC_API_URL: http://vet-gateway:8888
+      KEYCLOAK_BASE_URL: http://${REMOTE_HOST:-keycloak}:8080
+      NEXT_PUBLIC_API_URL: http://${REMOTE_HOST:-vet-gateway}:8888
       API_URL_EXTERNAL: http://localhost:8888
     depends_on:
       - vet-gateway
       - keycloak
     networks:
       - vet-network
+    profiles: ["dev"]   # по умолчанию только на ноутбуке
 
 volumes:
   postgres-data:

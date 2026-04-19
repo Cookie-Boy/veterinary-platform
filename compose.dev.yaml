@@ -83,6 +83,8 @@ services:
       KC_DB_PASSWORD: 12345
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HOSTNAME: 192.168.1.114  # текущий IP ПК
+      KC_HOSTNAME_STRICT: false
     command: start-dev
     ports:
       - "8080:8080"
@@ -121,7 +123,7 @@ services:
       - keycloak
     networks:
       - vet-network
-    profiles: ["infra", "dev"]   # можно запустить и там, и там (но обычно на ПК)
+    profiles: ["infra"]   # можно запустить и там, и там (но обычно на ПК)
 
   management:
     build: ./services/management-service
@@ -136,7 +138,7 @@ services:
       - keycloak
     networks:
       - vet-network
-    profiles: ["infra", "dev"]
+    profiles: ["infra"]
 
   profile:
     build: ./services/profile-service
@@ -150,7 +152,7 @@ services:
       - keycloak
     networks:
       - vet-network
-    profiles: ["infra", "dev"]
+    profiles: ["infra"]
 
   pet-health-analyzer:
     build: ./services/pet-health-analyzer-service
@@ -178,7 +180,7 @@ services:
       - python-ai
     networks:
       - vet-network
-    profiles: ["infra", "dev"]
+    profiles: ["infra"]
 
   pet-wearable:
     build: ./services/petwearable-service
@@ -197,7 +199,7 @@ services:
       - keycloak
     networks:
       - vet-network
-    profiles: ["infra", "dev"]
+    profiles: ["infra"]
 
   telegram-bot:
     build: ./services/telegram-bot-service
@@ -220,7 +222,7 @@ services:
       - mqtt
     networks:
       - vet-network
-    profiles: ["infra", "dev"]
+    profiles: ["infra"]
 
   vet-gateway:
     build: ./services/vet-gateway
@@ -245,7 +247,7 @@ services:
       - keycloak
     networks:
       - vet-network
-    profiles: ["infra", "dev"]
+    profiles: ["infra"]
 
   # ---------- ФРОНТЕНД (чаще всего запускается локально) ----------
   frontend:
@@ -263,7 +265,7 @@ services:
       KEYCLOAK_REALM: clinic-realm
       KEYCLOAK_BASE_URL: http://${REMOTE_HOST:-keycloak}:8080
       NEXT_PUBLIC_API_URL: http://${REMOTE_HOST:-vet-gateway}:8888
-      API_URL_EXTERNAL: http://localhost:8888
+      API_URL_EXTERNAL: http://${REMOTE_HOST:-localhost}:8888
     # depends_on:
     #   - vet-gateway
     #   - keycloak

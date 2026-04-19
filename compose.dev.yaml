@@ -180,7 +180,7 @@ services:
       - python-ai
     networks:
       - vet-network
-    profiles: ["infra"]
+    # profiles: ["infra"]
 
   pet-wearable:
     build: ./services/petwearable-service
@@ -199,7 +199,7 @@ services:
       - keycloak
     networks:
       - vet-network
-    profiles: ["infra"]
+    # profiles: ["infra"]
 
   telegram-bot:
     build: ./services/telegram-bot-service
@@ -222,7 +222,7 @@ services:
       - mqtt
     networks:
       - vet-network
-    profiles: ["infra"]
+    # profiles: ["infra"]
 
   vet-gateway:
     build: ./services/vet-gateway
@@ -243,7 +243,7 @@ services:
 
       PROFILE_HOST: ${REMOTE_HOST:-profile}
       PROFILE_PORT: 8083
-      
+
       TELEGRAM_HOST: ${REMOTE_HOST:-telegram-bot}
       TELEGRAM_PORT: 8090
     depends_on:

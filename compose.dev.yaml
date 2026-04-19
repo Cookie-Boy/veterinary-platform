@@ -230,17 +230,22 @@ services:
       - "8888:8888"
     environment:
       <<: *java-env
+      KEYCLOAK_CLIENT_SECRET: oy3FdqCED7Wi4BPX7JZ0Y3ils24UopsR
+      KEYCLOAK_ISSUER_URI: http://192.168.1.114:8080/realms/clinic-realm
       KEYCLOAK_HOST: ${REMOTE_HOST:-keycloak}
       KEYCLOAK_PORT: 8080
+
       APPOINTMENT_HOST: ${REMOTE_HOST:-appointment}
       APPOINTMENT_PORT: 8081
+
       MANAGEMENT_HOST: ${REMOTE_HOST:-management}
       MANAGEMENT_PORT: 8082
+
       PROFILE_HOST: ${REMOTE_HOST:-profile}
       PROFILE_PORT: 8083
+      
       TELEGRAM_HOST: ${REMOTE_HOST:-telegram-bot}
       TELEGRAM_PORT: 8090
-      KEYCLOAK_CLIENT_SECRET: oy3FdqCED7Wi4BPX7JZ0Y3ils24UopsR
     depends_on:
       - management
       - profile

@@ -264,9 +264,9 @@ services:
       KEYCLOAK_BASE_URL: http://${REMOTE_HOST:-keycloak}:8080
       NEXT_PUBLIC_API_URL: http://${REMOTE_HOST:-vet-gateway}:8888
       API_URL_EXTERNAL: http://localhost:8888
-    depends_on:
-      - vet-gateway
-      - keycloak
+    # depends_on:
+    #   - vet-gateway
+    #   - keycloak
     networks:
       - vet-network
     profiles: ["dev"]   # по умолчанию только на ноутбуке

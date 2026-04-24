@@ -7,14 +7,15 @@ x-java-env: &java-env
   SPRING_PROFILES_ACTIVE: docker
   DB_HOST: ${REMOTE_HOST:-postgres}
   DB_PORT: ${REMOTE_HOST:+5432}
-  SPRING_DATASOURCE_URL: jdbc:postgresql://${REMOTE_HOST:-postgres}:5432/vet-clinic?uuidRepresentation=standard
+  SPRING_DATASOURCE_URL: jdbc:postgresql://${REMOTE_HOST:-postgres}:5432/vet-clinic
   SPRING_DATASOURCE_USERNAME: postgres
   SPRING_DATASOURCE_PASSWORD: 12345
   MONGO_HOST: ${REMOTE_HOST:-mongo}
   MONGO_PORT: 27017
   REDIS_HOST: ${REMOTE_HOST:-redis}
   REDIS_PORT: 6379
-  KEYCLOAK_ISSUER_URI: http://${REMOTE_HOST:-keycloak}:8080/realms/clinic-realm
+  # KEYCLOAK_ISSUER_URI: http://${REMOTE_HOST:-keycloak}:8080/realms/clinic-realm
+  KEYCLOAK_ISSUER_URI: http://192.168.1.114:8080/realms/clinic-realm
 
 services:
   postgres:

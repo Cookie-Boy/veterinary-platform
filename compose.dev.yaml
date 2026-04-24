@@ -14,8 +14,7 @@ x-java-env: &java-env
   MONGO_PORT: 27017
   REDIS_HOST: ${REMOTE_HOST:-redis}
   REDIS_PORT: 6379
-  # KEYCLOAK_ISSUER_URI: http://${REMOTE_HOST:-keycloak}:8080/realms/clinic-realm
-  KEYCLOAK_ISSUER_URI: http://192.168.1.114:8080/realms/clinic-realm
+  KEYCLOAK_ISSUER_URI: http://${REMOTE_HOST:-keycloak}:8080/realms/clinic-realm
 
 services:
   postgres:
@@ -114,6 +113,7 @@ services:
     environment:
       <<: *java-env
       KEYCLOAK_CLIENT_SECRET: KndP9iogTlX3TrdkzuPWgZYzztsp9o8D
+      KEYCLOAK_EXTRA_ISSUER_URL: http://192.168.1.114:8080/realms/clinic-realm
       TG_BOT_HOST: ${REMOTE_HOST:-telegram-bot}
       TG_BOT_PORT: 8090
     depends_on:

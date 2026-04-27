@@ -113,7 +113,7 @@ services:
     environment:
       <<: *java-env
       KEYCLOAK_CLIENT_SECRET: KndP9iogTlX3TrdkzuPWgZYzztsp9o8D
-      KEYCLOAK_EXTRA_ISSUER_URL: http://192.168.1.114:8080/realms/clinic-realm
+      KEYCLOAK_EXTRA_ISSUER_URL: http://keycloak:8080/realms/clinic-realm
       TG_BOT_HOST: ${REMOTE_HOST:-telegram-bot}
       TG_BOT_PORT: 8090
     depends_on:
@@ -230,7 +230,7 @@ services:
     environment:
       <<: *java-env
       KEYCLOAK_CLIENT_SECRET: oy3FdqCED7Wi4BPX7JZ0Y3ils24UopsR
-      KEYCLOAK_ISSUER_URI: http://192.168.1.114:8080/realms/clinic-realm
+      KEYCLOAK_ISSUER_URI: http://keycloak:8080/realms/clinic-realm
       KEYCLOAK_HOST: ${REMOTE_HOST:-keycloak}
       KEYCLOAK_PORT: 8080
 

@@ -14,7 +14,7 @@ x-java-env: &java-env
   MONGO_PORT: 27017
   REDIS_HOST: ${REMOTE_HOST:-redis}
   REDIS_PORT: 6379
-  KEYCLOAK_ISSUER_URI: http://${REMOTE_HOST:-keycloak}:8080/realms/clinic-realm
+  KEYCLOAK_ISSUER_URI: http://192.168.1.114:8080/realms/clinic-realm
 
 services:
   postgres:
@@ -113,7 +113,7 @@ services:
     environment:
       <<: *java-env
       KEYCLOAK_CLIENT_SECRET: KndP9iogTlX3TrdkzuPWgZYzztsp9o8D
-      KEYCLOAK_EXTRA_ISSUER_URL: http://keycloak:8080/realms/clinic-realm
+      KEYCLOAK_EXTRA_ISSUER_URL: http://192.168.1.114:8080/realms/clinic-realm
       TG_BOT_HOST: ${REMOTE_HOST:-telegram-bot}
       TG_BOT_PORT: 8090
     depends_on:
@@ -230,9 +230,6 @@ services:
     environment:
       <<: *java-env
       KEYCLOAK_CLIENT_SECRET: oy3FdqCED7Wi4BPX7JZ0Y3ils24UopsR
-      KEYCLOAK_ISSUER_URI: http://keycloak:8080/realms/clinic-realm
-      KEYCLOAK_HOST: ${REMOTE_HOST:-keycloak}
-      KEYCLOAK_PORT: 8080
 
       APPOINTMENT_HOST: ${REMOTE_HOST:-appointment}
       APPOINTMENT_PORT: 8081
@@ -261,13 +258,13 @@ services:
     environment:
       NEXTAUTH_URL: http://localhost:3000
       NEXTAUTH_SECRET: HLZUx8ifGW+9pT1Xh0v7tln8706sYj+++i2DSXxbruY=
-      KEYCLOAK_ISSUER: http://${REMOTE_HOST:-keycloak}:8080/realms/clinic-realm
+      KEYCLOAK_ISSUER: http://192.168.1.114:8080/realms/clinic-realm
       KEYCLOAK_CLIENT_ID: vet-frontend
       KEYCLOAK_CLIENT_SECRET: Gv1nqQU8imIrxFxQrI9N7Dk0RZqiZ5lQ
       KEYCLOAK_ADMIN_CLIENT_ID: profile-service
       KEYCLOAK_ADMIN_CLIENT_SECRET: Xl2WP6TD01qkB5Lmd5abECck6VxlGBtk
       KEYCLOAK_REALM: clinic-realm
-      KEYCLOAK_BASE_URL: http://${REMOTE_HOST:-keycloak}:8080
+      KEYCLOAK_BASE_URL: http://192.168.1.114:8080
       NEXT_PUBLIC_API_URL: http://${REMOTE_HOST:-vet-gateway}:8888
       API_URL_EXTERNAL: http://${REMOTE_HOST:-localhost}:8888
     # depends_on:

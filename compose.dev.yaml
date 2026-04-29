@@ -121,6 +121,7 @@ services:
     depends_on:
       - postgres
       - redis
+      - profile
       - keycloak
     networks:
       - vet-network
@@ -162,6 +163,7 @@ services:
     environment:
       <<: *java-env
       KEYCLOAK_CLIENT_SECRET: KndP9iogTlX3TrdkzuPWgZYzztsp9o8D
+      MQTT_BROKER: tcp://${REMOTE_HOST:-mqtt}:1883
       MQTT_HOST: ${REMOTE_HOST:-mqtt}
       MQTT_PORT: 1883
       PYTHON_HOST: ${REMOTE_HOST:-python-ai}
@@ -187,15 +189,15 @@ services:
       - "8085:8085"
     environment:
       <<: *java-env
-      KEYCLOAK_CLIENT_SECRET: your-petwearable-secret
+      KEYCLOAK_CLIENT_SECRET: cJmrhLBTXL2g9oZlfdjVMVQ2eycb3dmY
       MQTT_HOST: ${REMOTE_HOST:-mqtt}
       MQTT_PORT: 1883
       GATEWAY_HOST: ${REMOTE_HOST:-vet-gateway}
       GATEWAY_PORT: 8888
     depends_on:
-      - postgres
-      - redis
+      - mqtt
       - keycloak
+      - profile
     networks:
       - vet-network
     profiles: ["infra"]

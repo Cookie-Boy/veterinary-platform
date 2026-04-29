@@ -190,6 +190,7 @@ services:
     environment:
       <<: *java-env
       KEYCLOAK_CLIENT_SECRET: cJmrhLBTXL2g9oZlfdjVMVQ2eycb3dmY
+      MQTT_BROKER: tcp://${REMOTE_HOST:-mqtt}:1883
       MQTT_HOST: ${REMOTE_HOST:-mqtt}
       MQTT_PORT: 1883
       GATEWAY_HOST: ${REMOTE_HOST:-vet-gateway}

@@ -70,6 +70,8 @@ services:
     image: eclipse-mosquitto:2.0
     ports:
       - "1883:1883"
+    volumes:
+    - ./mosquitto/config/mosquitto.conf:/mosquitto/config/mosquitto.conf
     networks:
       - vet-network
     # profiles: ["infra"]

@@ -168,6 +168,8 @@ services:
       MQTT_BROKER: tcp://${REMOTE_HOST:-mqtt}:1883
       MQTT_HOST: ${REMOTE_HOST:-mqtt}
       MQTT_PORT: 1883
+      GATEWAY_HOST: ${REMOTE_HOST:-vet-gateway}
+      GATEWAY_PORT: 8888
       MINIO_HOST: ${REMOTE_HOST:-minio}
       MINIO_PORT: 9000
       MINIO_ACCESS_KEY: minioadmin

@@ -74,7 +74,7 @@ services:
     - ./mosquitto/config/mosquitto.conf:/mosquitto/config/mosquitto.conf
     networks:
       - vet-network
-    # profiles: ["infra"]
+    profiles: ["infra"]
 
   keycloak:
     image: quay.io/keycloak/keycloak:26.6.0
@@ -127,7 +127,7 @@ services:
       - keycloak
     networks:
       - vet-network
-    profiles: ["infra"]   # можно запустить и там, и там (но обычно на ПК)
+    profiles: ["infra"]
 
   management:
     build: ./services/management-service
@@ -168,8 +168,6 @@ services:
       MQTT_BROKER: tcp://${REMOTE_HOST:-mqtt}:1883
       MQTT_HOST: ${REMOTE_HOST:-mqtt}
       MQTT_PORT: 1883
-      PYTHON_HOST: ${REMOTE_HOST:-python-ai}
-      PYTHON_PORT: 8091
       MINIO_HOST: ${REMOTE_HOST:-minio}
       MINIO_PORT: 9000
       MINIO_ACCESS_KEY: minioadmin
@@ -247,6 +245,9 @@ services:
       
       TELEGRAM_HOST: ${REMOTE_HOST:-telegram-bot}
       TELEGRAM_PORT: 8090
+
+      PYTHON_HOST: ${REMOTE_HOST:-python-ai}
+      PYTHON_PORT: 8091
     depends_on:
       - management
       - profile

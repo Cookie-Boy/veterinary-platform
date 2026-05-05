@@ -244,6 +244,9 @@ services:
 
       PROFILE_HOST: ${REMOTE_HOST:-profile}
       PROFILE_PORT: 8083
+
+      HEALTH_HOST: ${REMOTE_HOST:-pet-health-analyzer}
+      HEALTH_PORT: 8084
       
       TELEGRAM_HOST: ${REMOTE_HOST:-telegram-bot}
       TELEGRAM_PORT: 8090

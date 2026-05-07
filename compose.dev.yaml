@@ -205,25 +205,23 @@ services:
       - vet-network
     profiles: ["infra"]
 
-  telegram-bot:
+  clinic-bot:
     build: ./services/telegram-bot-service
     ports:
       - "8090:8090"
     environment:
       <<: *java-env
       KEYCLOAK_CLIENT_SECRET: MnRm2WcQMWruSA09qH2jpL9dwwF45ijx
-      BOT_TOKEN: ${BOT_TOKEN:-7837490236:AAFYka05fv1LDRseAdcJ3E_n_GxiGI3pOtA}
-      BOT_WEBHOOK_URL: ${BOT_WEBHOOK_URL:-https://jpr3ta-109-174-76-92.ru.tuna.am}
-      JETTY_HOST: localhost
-      JETTY_PORT: 9091
       MQTT_HOST: ${REMOTE_HOST:-mqtt}
       MQTT_PORT: 1883
       GATEWAY_HOST: ${REMOTE_HOST:-vet-gateway}
       GATEWAY_PORT: 8888
     depends_on:
       - postgres
+      - redis
       - keycloak
       - mqtt
+      - profile
     networks:
       - vet-network
     profiles: ["infra"]
@@ -248,7 +246,7 @@ services:
       HEALTH_HOST: ${REMOTE_HOST:-pet-health-analyzer}
       HEALTH_PORT: 8084
       
-      TELEGRAM_HOST: ${REMOTE_HOST:-telegram-bot}
+      TELEGRAM_HOST: ${REMOTE_HOST:-clinic-bot}
       TELEGRAM_PORT: 8090
 
       PYTHON_HOST: ${REMOTE_HOST:-python-ai}

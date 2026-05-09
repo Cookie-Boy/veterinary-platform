@@ -2,14 +2,13 @@ networks:
   vet-network:
     driver: bridge
 
-# Общие переменные окружения для Java-сервисов
 x-java-env: &java-env
   SPRING_PROFILES_ACTIVE: docker
   DB_HOST: ${REMOTE_HOST:-postgres}
   DB_PORT: ${REMOTE_HOST:+5432}
   SPRING_DATASOURCE_URL: jdbc:postgresql://${REMOTE_HOST:-postgres}:5432/vet-clinic
   SPRING_DATASOURCE_USERNAME: postgres
-  SPRING_DATASOURCE_PASSWORD: 12345 
+  SPRING_DATASOURCE_PASSWORD: 12345
   MONGO_HOST: ${REMOTE_HOST:-mongo}
   MONGO_PORT: 27017
   SPRING_REDIS_HOST: ${REMOTE_HOST:-redis}
@@ -85,7 +84,7 @@ services:
       KC_DB_PASSWORD: 12345
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
-      KC_HOSTNAME: 192.168.1.114  # текущий IP ПК
+      KC_HOSTNAME: 192.168.1.114
       KC_HOSTNAME_STRICT: false
     command: start-dev
     ports:
@@ -109,7 +108,6 @@ services:
       - vet-network
     profiles: ["infra"]
 
-  # ---------- МИКРОСЕРВИСЫ (по умолчанию на ПК, но могут быть запущены и локально) ----------
   appointment:
     build: ./services/appointment-service
     ports:
@@ -168,8 +166,6 @@ services:
       MQTT_BROKER: tcp://${REMOTE_HOST:-mqtt}:1883
       MQTT_HOST: ${REMOTE_HOST:-mqtt}
       MQTT_PORT: 1883
-      GATEWAY_HOST: ${REMOTE_HOST:-vet-gateway}
-      GATEWAY_PORT: 8888
       MINIO_HOST: ${REMOTE_HOST:-minio}
       MINIO_PORT: 9000
       MINIO_ACCESS_KEY: minioadmin
@@ -195,8 +191,6 @@ services:
       MQTT_BROKER: tcp://${REMOTE_HOST:-mqtt}:1883
       MQTT_HOST: ${REMOTE_HOST:-mqtt}
       MQTT_PORT: 1883
-      GATEWAY_HOST: ${REMOTE_HOST:-vet-gateway}
-      GATEWAY_PORT: 8888
     depends_on:
       - mqtt
       - keycloak
@@ -214,8 +208,6 @@ services:
       KEYCLOAK_CLIENT_SECRET: MnRm2WcQMWruSA09qH2jpL9dwwF45ijx
       MQTT_HOST: ${REMOTE_HOST:-mqtt}
       MQTT_PORT: 1883
-      GATEWAY_HOST: ${REMOTE_HOST:-vet-gateway}
-      GATEWAY_PORT: 8888
     depends_on:
       - postgres
       - redis
@@ -233,22 +225,16 @@ services:
     environment:
       <<: *java-env
       KEYCLOAK_CLIENT_SECRET: oy3FdqCED7Wi4BPX7JZ0Y3ils24UopsR
-
       APPOINTMENT_HOST: ${REMOTE_HOST:-appointment}
       APPOINTMENT_PORT: 8081
-
       MANAGEMENT_HOST: ${REMOTE_HOST:-management}
       MANAGEMENT_PORT: 8082
-
       PROFILE_HOST: ${REMOTE_HOST:-profile}
       PROFILE_PORT: 8083
-
       HEALTH_HOST: ${REMOTE_HOST:-pet-health-analyzer}
       HEALTH_PORT: 8084
-      
       TELEGRAM_HOST: ${REMOTE_HOST:-clinic-bot}
       TELEGRAM_PORT: 8090
-
       PYTHON_HOST: ${REMOTE_HOST:-python-ai}
       PYTHON_PORT: 8091
     depends_on:
@@ -259,7 +245,6 @@ services:
       - vet-network
     profiles: ["infra"]
 
-  # ---------- ФРОНТЕНД (чаще всего запускается локально) ----------
   frontend:
     build: ./frontend
     ports:
@@ -276,12 +261,9 @@ services:
       KEYCLOAK_BASE_URL: http://192.168.1.114:8080
       NEXT_PUBLIC_API_URL: http://${REMOTE_HOST:-vet-gateway}:8888
       API_URL_EXTERNAL: http://${REMOTE_HOST:-localhost}:8888
-    # depends_on:
-    #   - vet-gateway
-    #   - keycloak
     networks:
       - vet-network
-    profiles: ["dev"]   # по умолчанию только на ноутбуке
+    profiles: ["dev"]
 
 volumes:
   postgres-data:

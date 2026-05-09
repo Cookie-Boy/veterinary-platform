@@ -31,6 +31,12 @@ services:
     networks:
       - vet-network
     profiles: ["infra"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d vet-clinic"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   mongo:
     image: mongo:7.0
@@ -41,6 +47,12 @@ services:
     networks:
       - vet-network
     profiles: ["infra"]
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   redis:
     image: redis:7.2-alpine
@@ -49,6 +61,12 @@ services:
     networks:
       - vet-network
     profiles: ["infra"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   minio:
     image: minio/minio:latest
@@ -64,6 +82,12 @@ services:
     networks:
       - vet-network
     profiles: ["infra"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
 
   mqtt:
     image: eclipse-mosquitto:2.0
@@ -74,6 +98,12 @@ services:
     networks:
       - vet-network
     profiles: ["infra"]
+    healthcheck:
+      test: ["CMD", "mosquitto_sub", "-t", "$$SYS/broker/uptime", "-C", "1", "-W", "1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   keycloak:
     image: quay.io/keycloak/keycloak:26.6.0
@@ -90,10 +120,17 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     networks:
       - vet-network
     profiles: ["infra"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/realms/master"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
 
   python-ai:
     build: ./services/ai-model
@@ -119,10 +156,14 @@ services:
       TG_BOT_HOST: ${REMOTE_HOST:-telegram-bot}
       TG_BOT_PORT: 8090
     depends_on:
-      - postgres
-      - redis
-      - profile
-      - keycloak
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+      profile:
+        condition: service_started
     networks:
       - vet-network
     profiles: ["infra"]
@@ -135,9 +176,12 @@ services:
       <<: *java-env
       KEYCLOAK_CLIENT_SECRET: your-management-secret
     depends_on:
-      - postgres
-      - redis
-      - keycloak
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
     networks:
       - vet-network
     profiles: ["infra"]
@@ -150,8 +194,10 @@ services:
       <<: *java-env
       KEYCLOAK_CLIENT_SECRET: your-profile-secret
     depends_on:
-      - mongo
-      - keycloak
+      mongo:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
     networks:
       - vet-network
     profiles: ["infra"]
@@ -171,12 +217,18 @@ services:
       MINIO_ACCESS_KEY: minioadmin
       MINIO_SECRET_KEY: minioadmin
     depends_on:
-      - postgres
-      - mongo
-      - redis
-      - keycloak
-      - mqtt
-      - python-ai
+      postgres:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+      mqtt:
+        condition: service_healthy
+      python-ai:
+        condition: service_started
     networks:
       - vet-network
     profiles: ["infra"]
@@ -192,9 +244,12 @@ services:
       MQTT_HOST: ${REMOTE_HOST:-mqtt}
       MQTT_PORT: 1883
     depends_on:
-      - mqtt
-      - keycloak
-      - profile
+      mqtt:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+      profile:
+        condition: service_started
     networks:
       - vet-network
     profiles: ["infra"]
@@ -209,11 +264,16 @@ services:
       MQTT_HOST: ${REMOTE_HOST:-mqtt}
       MQTT_PORT: 1883
     depends_on:
-      - postgres
-      - redis
-      - keycloak
-      - mqtt
-      - profile
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+      mqtt:
+        condition: service_healthy
+      profile:
+        condition: service_started
     networks:
       - vet-network
     profiles: ["infra"]
@@ -238,9 +298,12 @@ services:
       PYTHON_HOST: ${REMOTE_HOST:-python-ai}
       PYTHON_PORT: 8091
     depends_on:
-      - management
-      - profile
-      - keycloak
+      management:
+        condition: service_started
+      profile:
+        condition: service_started
+      keycloak:
+        condition: service_healthy
     networks:
       - vet-network
     profiles: ["infra"]

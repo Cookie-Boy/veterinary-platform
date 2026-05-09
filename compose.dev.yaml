@@ -127,7 +127,7 @@ services:
     profiles: ["infra"]
     healthcheck:
       test: ["CMD", "true"]
-      start_period: 20s
+      start_period: 30s
 
   python-ai:
     build: ./services/ai-model

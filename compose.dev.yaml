@@ -255,7 +255,7 @@ services:
     profiles: ["infra"]
 
   clinic-bot:
-    build: ./services/telegram-bot-service
+    build: ./services/bot-service
     ports:
       - "8090:8090"
     environment:

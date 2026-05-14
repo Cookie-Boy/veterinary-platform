@@ -298,6 +298,9 @@ services:
     build: ./frontend
     ports:
       - "3000:3000"
+    command: npm run dev
+    stdin_open: true
+    tty: true
     environment:
       NEXTAUTH_URL: http://localhost:3000
       NEXTAUTH_SECRET: HLZUx8ifGW+9pT1Xh0v7tln8706sYj+++i2DSXxbruY=

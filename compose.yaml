@@ -311,7 +311,7 @@ services:
       KEYCLOAK_ADMIN_CLIENT_SECRET: Xl2WP6TD01qkB5Lmd5abECck6VxlGBtk
       KEYCLOAK_REALM: clinic-realm
       KEYCLOAK_BASE_URL: http://192.168.1.114:8080
-      NEXT_PUBLIC_API_URL: http://${REMOTE_HOST:-vet-gateway}:8888
+      NEXT_PUBLIC_API_URL: http://192.168.1.114:8888
       API_URL_EXTERNAL: http://${REMOTE_HOST:-localhost}:8888
     networks:
       - vet-network

@@ -1,25 +1,13 @@
-import os
 import pandas as pd
-import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import classification_report
+from sklearn.metrics import confusion_matrix, classification_report, roc_curve, auc
 import joblib
-from minio import Minio
-from minio.error import S3Error
+import matplotlib.pyplot as plt
 
-# ===== Конфигурация MinIO из переменных окружения =====
-MINIO_ENDPOINT = os.getenv('MINIO_ENDPOINT', 'localhost:9000')
-MINIO_ACCESS_KEY = os.getenv('MINIO_ACCESS_KEY', 'minioadmin')
-MINIO_SECRET_KEY = os.getenv('MINIO_SECRET_KEY', 'minioadmin')
-MINIO_BUCKET = os.getenv('MINIO_BUCKET', 'ml-models')
-MINIO_MODEL_OBJECT = os.getenv('MINIO_MODEL_OBJECT', 'pet_health_model.pkl')
-# =====================================================
-
-# Загрузка датасета
 DATASET_NAME = "pet_vitals_v1.csv"
 MODEL_PATH = "pet_health_model.pkl"
 df = pd.read_csv(DATASET_NAME)
@@ -65,6 +53,22 @@ model.fit(X_train, y_train)
 
 # Оценка
 y_pred = model.predict(X_test)
+
+cm = confusion_matrix(y_test, y_pred)
+print("Матрица ошибок:\n", cm)
+
+# Для бинарной задачи (норма vs все аномалии)
+y_test_bin = (y_test != 0).astype(int)   # 0 – норма, 1 – аномалия
+y_pred_bin = (y_pred != 0).astype(int)
+
+tn, fp, fn, tp = confusion_matrix(y_test_bin, y_pred_bin).ravel()
+
+type1_error = fp / (fp + tn)   # ошибка первого рода (False Positive Rate)
+type2_error = fn / (fn + tp)   # ошибка второго рода (False Negative Rate)
+
+print(f"Ошибка 1-го рода (ложная тревога, модель сказала «аномалия»): {type1_error:.4f}")
+print(f"Ошибка 2-го рода (пропуск аномалии, модель сказала «норма»): {type2_error:.4f}")
+
 print("Отчёт о классификации на тестовой выборке:")
 print(classification_report(y_test, y_pred, target_names=['норма', 'аном.пульс', 'аном.дыхан.', 'аном.темп.']))
 
@@ -73,38 +77,16 @@ local_model_path = MODEL_PATH
 joblib.dump(model, local_model_path)
 print(f"Модель сохранена локально: {local_model_path}")
 
-# Загружаем в MinIO
-try:
-    # Инициализируем клиент MinIO
-    minio_client = Minio(
-        MINIO_ENDPOINT,
-        access_key=MINIO_ACCESS_KEY,
-        secret_key=MINIO_SECRET_KEY,
-        secure=False  # если используете HTTP, а не HTTPS
-    )
+# Берём вероятности для класса "аномалия" (суммируем вероятности трёх аномальных классов)
+y_pred_proba_anomaly = model.predict_proba(X_test)[:, 1:].sum(axis=1)  # если порядок классов [0,1,2,3]
 
-    # Проверяем/создаём бакет
-    found = minio_client.bucket_exists(MINIO_BUCKET)
-    if not found:
-        minio_client.make_bucket(MINIO_BUCKET)
-        print(f"Бакет '{MINIO_BUCKET}' создан.")
-    else:
-        print(f"Бакет '{MINIO_BUCKET}' уже существует.")
+fpr, tpr, _ = roc_curve(y_test_bin, y_pred_proba_anomaly)
+roc_auc = auc(fpr, tpr)
 
-    # Загружаем файл
-    minio_client.fput_object(
-        MINIO_BUCKET,
-        MINIO_MODEL_OBJECT,
-        local_model_path,
-        content_type='application/octet-stream'
-    )
-    print(f"Модель успешно загружена в MinIO: {MINIO_BUCKET}/{MINIO_MODEL_OBJECT}")
-
-    # Опционально удаляем локальный файл
-    os.remove(local_model_path)
-    print("Локальный файл удалён.")
-
-except S3Error as e:
-    print(f"Ошибка MinIO: {e}")
-except Exception as e:
-    print(f"Общая ошибка: {e}")
+plt.plot(fpr, tpr, label=f'AUC = {roc_auc:.2f}')
+plt.plot([0,1],[0,1],'k--')
+plt.xlabel('False Positive Rate (ошибка 1-го рода)')
+plt.ylabel('True Positive Rate')
+plt.title('ROC-кривая: норма против аномалии')
+plt.legend()
+plt.show()

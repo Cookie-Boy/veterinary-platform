@@ -15,7 +15,7 @@ x-java-env: &java-env
   SPRING_REDIS_PORT: 6379
   GATEWAY_HOST: ${REMOTE_HOST:-vet-gateway}
   GATEWAY_PORT: 8888
-  KEYCLOAK_ISSUER_URI: https://6l6lt7-95-104-185-219.ru.tuna.am/realms/clinic-realm
+  KEYCLOAK_ISSUER_URI: https://hrn0ue-95-104-185-219.ru.tuna.am/realms/clinic-realm
 
 services:
   postgres:
@@ -89,7 +89,7 @@ services:
       KC_DB_PASSWORD: 12345
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
-      KC_HOSTNAME: https://6l6lt7-95-104-185-219.ru.tuna.am
+      KC_HOSTNAME: https://hrn0ue-95-104-185-219.ru.tuna.am
       KC_HOSTNAME_STRICT: false
       KC_PROXY: edge
     command: start-dev
@@ -126,7 +126,7 @@ services:
     environment:
       <<: *java-env
       KEYCLOAK_CLIENT_SECRET: KndP9iogTlX3TrdkzuPWgZYzztsp9o8D
-      KEYCLOAK_EXTRA_ISSUER_URL: https://6l6lt7-95-104-185-219.ru.tuna.am/realms/clinic-realm
+      KEYCLOAK_EXTRA_ISSUER_URL: https://hrn0ue-95-104-185-219.ru.tuna.am/realms/clinic-realm
       TG_BOT_HOST: ${REMOTE_HOST:-telegram-bot}
       TG_BOT_PORT: 8090
     depends_on:
@@ -279,15 +279,15 @@ services:
     stdin_open: true
     tty: true
     environment:
-      NEXTAUTH_URL: https://drdwut-95-104-185-219.ru.tuna.am
+      NEXTAUTH_URL: https://c9x9kn-95-104-185-219.ru.tuna.am
       NEXTAUTH_SECRET: HLZUx8ifGW+9pT1Xh0v7tln8706sYj+++i2DSXxbruY=
-      KEYCLOAK_ISSUER: https://6l6lt7-95-104-185-219.ru.tuna.am/realms/clinic-realm
+      KEYCLOAK_ISSUER: https://hrn0ue-95-104-185-219.ru.tuna.am/realms/clinic-realm
       KEYCLOAK_CLIENT_ID: vet-frontend
       KEYCLOAK_CLIENT_SECRET: Gv1nqQU8imIrxFxQrI9N7Dk0RZqiZ5lQ
       KEYCLOAK_ADMIN_CLIENT_ID: profile-service
       KEYCLOAK_ADMIN_CLIENT_SECRET: Xl2WP6TD01qkB5Lmd5abECck6VxlGBtk
       KEYCLOAK_REALM: clinic-realm
-      KEYCLOAK_BASE_URL: https://6l6lt7-95-104-185-219.ru.tuna.am
+      KEYCLOAK_BASE_URL: https://hrn0ue-95-104-185-219.ru.tuna.am
       NEXT_PUBLIC_API_URL: /api
     networks:
       - vet-network

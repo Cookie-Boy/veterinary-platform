@@ -1,0 +1,134 @@
+x-java-env: &java-env
+  SPRING_PROFILES_ACTIVE: docker
+
+  # Переменные для подключения к БД — они будут взяты из окружения Railway
+  SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
+  SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+  SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+  MONGO_HOST: ${MONGO_HOST}
+  MONGO_PORT: ${MONGO_PORT}
+  SPRING_REDIS_HOST: ${SPRING_REDIS_HOST}
+  SPRING_REDIS_PORT: ${SPRING_REDIS_PORT}
+
+  # Внутренние адреса для других сервисов (через приватную сеть Railway)
+  KEYCLOAK_ISSUER_URI: http://${KEYCLOAK_HOSTNAME:-keycloak}.railway.internal:8080/realms/clinic-realm
+  GATEWAY_HOST: ${GATEWAY_HOST:-vet-gateway}.railway.internal
+  GATEWAY_PORT: 8888
+  APPOINTMENT_HOST: ${APPOINTMENT_HOST:-appointment}.railway.internal
+  MANAGEMENT_HOST: ${MANAGEMENT_HOST:-management}.railway.internal
+  PROFILE_HOST: ${PROFILE_HOST:-profile}.railway.internal
+  HEALTH_HOST: ${HEALTH_HOST:-pet-health-analyzer}.railway.internal
+  TELEGRAM_HOST: ${TELEGRAM_HOST:-clinic-bot}.railway.internal
+  PYTHON_HOST: ${PYTHON_HOST:-python-ai}.railway.internal
+  TG_BOT_HOST: ${TG_BOT_HOST:-clinic-bot}.railway.internal
+  MQTT_HOST: ${MQTT_HOST:-mqtt}.railway.internal
+  MQTT_BROKER: tcp://${MQTT_HOST:-mqtt}.railway.internal:1883
+
+services:
+  mqtt:
+    image: eclipse-mosquitto:2.0
+    ports:
+      - "1883:1883"
+    volumes:
+      - ./volumes/mosquitto/config/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.6.0
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: ${KC_DB_URL}
+      KC_DB_USERNAME: ${KC_DB_USERNAME}
+      KC_DB_PASSWORD: ${KC_DB_PASSWORD}
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HOSTNAME: ${KEYCLOAK_HOSTNAME}.railway.internal
+      KC_HOSTNAME_STRICT: false
+      KC_HTTP_ENABLED: true
+      KC_PROXY: edge
+    ports:
+      - "8080:8080"
+
+  python-ai:
+    build: ./services/ai-model
+    ports:
+      - "8091:8091"
+    environment:
+      MODEL_PATH: /app/pet_health_model.pkl
+      REDIS_HOST: ${SPRING_REDIS_HOST}
+
+  # Java-сервисы
+  appointment:
+    build: ./services/appointment-service
+    ports:
+      - "8081:8081"
+    environment:
+      <<: *java-env
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET_APPOINTMENT}
+
+  management:
+    build: ./services/management-service
+    ports:
+      - "8082:8082"
+    environment:
+      <<: *java-env
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET_MANAGEMENT}
+
+  profile:
+    build: ./services/profile-service
+    ports:
+      - "8083:8083"
+    environment:
+      <<: *java-env
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET_PROFILE}
+
+  pet-health-analyzer:
+    build: ./services/pet-health-analyzer-service
+    ports:
+      - "8084:8084"
+    environment:
+      <<: *java-env
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET_PETHEALTH}
+
+  pet-wearable:
+    build: ./services/petwearable-service
+    ports:
+      - "8085:8085"
+    environment:
+      <<: *java-env
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET_PETWEARABLE}
+
+  clinic-bot:
+    build: ./services/bot-service
+    ports:
+      - "8090:8090"
+    environment:
+      <<: *java-env
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET_BOT}
+
+  vet-gateway:
+    build: ./services/vet-gateway
+    ports:
+      - "8888:8888"
+    environment:
+      <<: *java-env
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET_GATEWAY}
+      # Эти переменные переопределяют внутренние адреса для Gateway
+      APPOINTMENT_HOST: appointment.railway.internal
+      MANAGEMENT_HOST: management.railway.internal
+      PROFILE_HOST: profile.railway.internal
+      HEALTH_HOST: pet-health-analyzer.railway.internal
+      TELEGRAM_HOST: clinic-bot.railway.internal
+      PYTHON_HOST: python-ai.railway.internal
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    command: npm run dev
+    environment:
+      NEXTAUTH_URL: https://${RAILWAY_STATIC_URL}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
+      KEYCLOAK_ISSUER: https://${KEYCLOAK_HOSTNAME}.railway.internal/realms/clinic-realm
+      KEYCLOAK_CLIENT_ID: vet-frontend
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET_FRONTEND}
+      NEXT_PUBLIC_API_URL: https://vet-gateway.railway.internal

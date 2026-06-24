@@ -289,7 +289,7 @@ services:
       KEYCLOAK_BASE_URL: http://192.168.1.114:8080
       GATEWAY_HOST: 192.168.1.114
       GATEWAY_PORT: 8888
-      # NEXT_PUBLIC_API_URL: http://192.168.1.114:8888
+      NEXT_PUBLIC_API_URL: http://192.168.1.114:8888
       API_URL_EXTERNAL: http://${REMOTE_HOST:-localhost}:8888
     networks:
       - vet-network

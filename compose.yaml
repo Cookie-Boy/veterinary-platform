@@ -89,8 +89,9 @@ services:
       KC_DB_PASSWORD: 12345
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
-      KC_HOSTNAME: 192.168.1.114
+      KC_HOSTNAME: https://6l6lt7-95-104-185-219.ru.tuna.am
       KC_HOSTNAME_STRICT: false
+      KC_PROXY: edge
     command: start-dev
     ports:
       - "8080:8080"
@@ -278,7 +279,7 @@ services:
     stdin_open: true
     tty: true
     environment:
-      NEXTAUTH_URL: http://localhost:3000
+      NEXTAUTH_URL: https://drdwut-95-104-185-219.ru.tuna.am
       NEXTAUTH_SECRET: HLZUx8ifGW+9pT1Xh0v7tln8706sYj+++i2DSXxbruY=
       KEYCLOAK_ISSUER: https://6l6lt7-95-104-185-219.ru.tuna.am/realms/clinic-realm
       KEYCLOAK_CLIENT_ID: vet-frontend
@@ -287,8 +288,7 @@ services:
       KEYCLOAK_ADMIN_CLIENT_SECRET: Xl2WP6TD01qkB5Lmd5abECck6VxlGBtk
       KEYCLOAK_REALM: clinic-realm
       KEYCLOAK_BASE_URL: https://6l6lt7-95-104-185-219.ru.tuna.am
-      NEXT_PUBLIC_API_URL: https://drdwut-95-104-185-219.ru.tuna.am
-      API_URL_EXTERNAL: http://${REMOTE_HOST:-localhost}:8888
+      NEXT_PUBLIC_API_URL: /api
     networks:
       - vet-network
 

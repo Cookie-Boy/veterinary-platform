@@ -1,0 +1,2 @@
+[build]
+dockerComposeFile = "docker-compose.railway.yml"

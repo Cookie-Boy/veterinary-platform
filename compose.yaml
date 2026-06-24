@@ -15,7 +15,7 @@ x-java-env: &java-env
   SPRING_REDIS_PORT: 6379
   GATEWAY_HOST: ${REMOTE_HOST:-vet-gateway}
   GATEWAY_PORT: 8888
-  KEYCLOAK_ISSUER_URI: http://192.168.1.114:8080/realms/clinic-realm
+  KEYCLOAK_ISSUER_URI: https://6l6lt7-95-104-185-219.ru.tuna.am/realms/clinic-realm
 
 services:
   postgres:
@@ -126,7 +126,7 @@ services:
     environment:
       <<: *java-env
       KEYCLOAK_CLIENT_SECRET: KndP9iogTlX3TrdkzuPWgZYzztsp9o8D
-      KEYCLOAK_EXTRA_ISSUER_URL: http://192.168.1.114:8080/realms/clinic-realm
+      KEYCLOAK_EXTRA_ISSUER_URL: https://6l6lt7-95-104-185-219.ru.tuna.am/realms/clinic-realm
       TG_BOT_HOST: ${REMOTE_HOST:-telegram-bot}
       TG_BOT_PORT: 8090
     depends_on:

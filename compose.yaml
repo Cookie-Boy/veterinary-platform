@@ -249,6 +249,7 @@ services:
     environment:
       <<: *java-env
       KEYCLOAK_CLIENT_SECRET: oy3FdqCED7Wi4BPX7JZ0Y3ils24UopsR
+      FRONTEND_URL: https://vet-platform.cloudpub.ru
       APPOINTMENT_HOST: ${REMOTE_HOST:-appointment}
       APPOINTMENT_PORT: 8081
       MANAGEMENT_HOST: ${REMOTE_HOST:-management}
@@ -275,7 +276,6 @@ services:
     build: ./frontend
     ports:
       - "3000:3000"
-    command: npm run dev
     stdin_open: true
     tty: true
     environment:
@@ -289,6 +289,7 @@ services:
       KEYCLOAK_REALM: clinic-realm
       KEYCLOAK_BASE_URL: https://vet-keycloak.cloudpub.ru
       NEXT_PUBLIC_API_URL: https://vet-gateway.cloudpub.ru
+      NODE_ENV: production
     networks:
       - vet-network
 

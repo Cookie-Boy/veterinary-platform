@@ -273,7 +273,10 @@ services:
       - vet-network
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      args:
+        NEXT_PUBLIC_API_URL: https://vet-gateway.cloudpub.ru
     ports:
       - "3000:3000"
     stdin_open: true

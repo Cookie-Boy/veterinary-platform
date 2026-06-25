@@ -288,7 +288,7 @@ services:
       KEYCLOAK_ADMIN_CLIENT_SECRET: Xl2WP6TD01qkB5Lmd5abECck6VxlGBtk
       KEYCLOAK_REALM: clinic-realm
       KEYCLOAK_BASE_URL: https://vet-keycloak.cloudpub.ru
-      NEXT_PUBLIC_API_URL: /api
+      NEXT_PUBLIC_API_URL: https://vet-gateway.cloudpub.ru
     networks:
       - vet-network
 

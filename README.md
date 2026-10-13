@@ -136,14 +136,14 @@ flowchart TB
 
 | Сервис | Назначение | Порт | Документация |
 |---|---|---|---|
-| **API Gateway** | Маршрутизация, CORS, логирование | 8888 | *[→ README](./services/gateway)* |
-| **Profile Service** | Владельцы и питомцы, QR-коды, VK-linking | 8083 | *[→ README](./services/profile)* |
-| **Management Service** | Врачи, медикаменты, заказы, отзывы | 8082 | *[→ README](./services/management)* |
-| **Appointment Service** | Запись на приём, слоты, напоминания | 8084 | *[→ README](./services/appointment)* |
-| **Pet Wearable Service** | Эмуляция умных ошейников, MQTT-публикация | 8085 | *[→ README](./services/pet-wearable)* |
-| **Pet Health Analyzer** | Потоковый анализ телеметрии, ML, рекомендации | 8086 | *[→ README](./services/health-analyzer)* |
-| **VK Bot Service** | Чат-бот, команды, уведомления | 8081 | *[→ README](./services/vk-bot)* |
-| **Frontend** | Веб-приложение личного кабинета | 3000 | *[→ README](./frontend)* |
+| **API Gateway** | Маршрутизация, CORS, логирование | 8888 | [→ README](https://github.com/Cookie-Boy/vet-gateway#readme) |
+| **Profile Service** | Владельцы и питомцы, QR-коды, VK-linking | 8083 | [→ README](https://github.com/Cookie-Boy/profile-service#readme) |
+| **Management Service** | Врачи, медикаменты, заказы, отзывы | 8082 | [→ README](https://github.com/Cookie-Boy/management-service#readme) |
+| **Appointment Service** | Запись на приём, слоты, напоминания | 8084 | [→ README](https://github.com/Cookie-Boy/appointment-service#readme) |
+| **Pet Wearable Service** | Эмуляция умных ошейников, MQTT-публикация | 8085 | [→ README](https://github.com/Cookie-Boy/petwearable-service#readme) |
+| **Pet Health Analyzer** | Потоковый анализ телеметрии, ML, рекомендации | 8086 | [→ README](https://github.com/Cookie-Boy/pet-health-analyzer-service#readme) |
+| **VK Bot Service** | Чат-бот, команды, уведомления | 8081 | [→ README](https://github.com/Cookie-Boy/bot-service#readme) |
+| **Frontend** | Веб-приложение личного кабинета | 3000 | [→ README](https://github.com/Cookie-Boy/frontend#readme) |
 
 ---
 

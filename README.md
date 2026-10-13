@@ -143,7 +143,7 @@ flowchart TB
 | **Pet Wearable Service** | Эмуляция умных ошейников, MQTT-публикация | 8085 | [→ README](https://github.com/Cookie-Boy/petwearable-service#readme) |
 | **Pet Health Analyzer** | Потоковый анализ телеметрии, ML, рекомендации | 8086 | [→ README](https://github.com/Cookie-Boy/pet-health-analyzer-service#readme) |
 | **VK Bot Service** | Чат-бот, команды, уведомления | 8081 | [→ README](https://github.com/Cookie-Boy/bot-service#readme) |
-| **Frontend** | Веб-приложение личного кабинета | 3000 | [→ README](https://github.com/Cookie-Boy/frontend#readme) |
+| **Frontend** | Веб-приложение личного кабинета | 3000 | [→ README](https://github.com/Cookie-Boy/vet-frontend#readme) |
 
 ---
 
